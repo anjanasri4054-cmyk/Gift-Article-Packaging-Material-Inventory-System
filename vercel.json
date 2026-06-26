@@ -8,5 +8,11 @@
       "entrypoint": "backend/server.js",
       "routePrefix": "/api"
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/uploads/(.*)",
+      "destination": "/api/uploads/$1"
+    }
+  ]
 }

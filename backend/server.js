@@ -46,6 +46,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Serve uploaded images as static files
 app.use('/uploads', express.static(uploadsDir));
+app.use('/api/uploads', express.static(uploadsDir));
 
 // ─── DB initialization middleware (crucial for Vercel serverless) ─────────────
 let dbInitialized = false;
@@ -63,19 +64,43 @@ app.use(async (req, res, next) => {
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
+
 app.use('/api/products', productRoutes);
+app.use('/products', productRoutes);
+
 app.use('/api/materials', materialRoutes);
+app.use('/materials', materialRoutes);
+
 app.use('/api/suppliers', supplierRoutes);
+app.use('/suppliers', supplierRoutes);
+
 app.use('/api/inventory', inventoryRoutes);
+app.use('/inventory', inventoryRoutes);
+
 app.use('/api/notifications', notificationRoutes);
+app.use('/notifications', notificationRoutes);
+
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/dashboard', dashboardRoutes);
+
 app.use('/api/bundles', bundleRoutes);
+app.use('/bundles', bundleRoutes);
+
 app.use('/api/reports', reportRoutes);
+app.use('/reports', reportRoutes);
+
 app.use('/api/customers', customerRoutes);
+app.use('/customers', customerRoutes);
+
 app.use('/api/orders', orderRoutes);
+app.use('/orders', orderRoutes);
 
 // ─── Health Check ─────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', message: 'Paper Plane Inventory API is running' });
+});
+app.get('/health', (req, res) => {
   res.json({ status: 'OK', message: 'Paper Plane Inventory API is running' });
 });
 
