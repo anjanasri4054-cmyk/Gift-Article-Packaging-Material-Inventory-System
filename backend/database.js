@@ -37,7 +37,23 @@ const db = {
    * Initialize the database. Must be called (and awaited) before any queries.
    */
   async initialize() {
-    const SQL = await initSqlJs();
+    const wasmPath = path.join(__dirname, 'node_modules', 'sql.js', 'dist', 'sql-wasm.wasm');
+    
+    // Force Vercel's Node File Trace (NFT) to bundle the sql-wasm.wasm asset
+    if (process.env.VERCEL) {
+      try {
+        if (fs.existsSync(wasmPath)) {
+          fs.readFileSync(wasmPath);
+          console.log('✅ Bundled WASM found and verified');
+        }
+      } catch (e) {
+        console.warn('WASM prefetch warning:', e.message);
+      }
+    }
+
+    const SQL = await initSqlJs({
+      locateFile: () => wasmPath
+    });
 
     // Load existing database file or create new
     if (fs.existsSync(DB_PATH)) {
