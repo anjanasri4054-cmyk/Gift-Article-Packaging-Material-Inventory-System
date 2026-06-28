@@ -351,6 +351,13 @@ function _seedData() {
     ins.run(1, 'Satin Ribbon 1 inch', 'material', 'Stock In', 300, 'Purchased from Ribbon World', 'Admin', new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString());
     ins.run(1, 'Wooden Photo Frame 5x7', 'product', 'Stock Out', 20, 'Sold to retail customer', 'Admin', new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString());
     ins.run(2, 'Corrugated Gift Box 12x12', 'material', 'Stock In', 100, 'Restocking from Box Masters', 'Admin', new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString());
+    
+    // Seed May 2026 data
+    ins.run(1, 'Wooden Photo Frame 5x7', 'product', 'Stock In', 50, 'Monthly frame restock', 'Admin', '2026-05-10T09:00:00.000Z');
+    ins.run(2, 'Ceramic Coffee Mug', 'product', 'Stock In', 120, 'Mug inventory replenishment', 'Admin', '2026-05-15T11:30:00.000Z');
+    ins.run(3, 'Tissue Wrapping Paper', 'material', 'Stock In', 200, 'Wrapper restocking', 'Admin', '2026-05-18T14:15:00.000Z');
+    ins.run(1, 'Wooden Photo Frame 5x7', 'product', 'Stock Out', 15, 'Sold for corporate order', 'Admin', '2026-05-22T10:00:00.000Z');
+    ins.run(2, 'Ceramic Coffee Mug', 'product', 'Stock Out', 45, 'Corporate order delivery', 'Admin', '2026-05-25T15:45:00.000Z');
     console.log('✅ Inventory logs seeded');
   }
 

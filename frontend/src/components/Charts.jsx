@@ -83,7 +83,7 @@ export function InventoryDistributionChart({ data }) {
 }
 
 // ── 2. Monthly Stock Movement (Bar) ─────────────────────────────────────
-export function MonthlyMovementChart({ data }) {
+export function MonthlyMovementChart({ data, onChartClick }) {
   if (!data || !data.labels || data.labels.length === 0) {
     return (
       <div className="empty-state" style={{ padding: '40px' }}>
@@ -122,6 +122,15 @@ export function MonthlyMovementChart({ data }) {
   const options = {
     responsive: true,
     maintainAspectRatio: false,
+    onClick: (event, elements) => {
+      if (elements && elements.length > 0) {
+        const datasetIndex = elements[0].datasetIndex;
+        const actionType = datasetIndex === 0 ? 'Stock In' : 'Stock Out';
+        if (onChartClick) {
+          onChartClick(actionType);
+        }
+      }
+    },
     plugins: {
       legend: {
         position: 'top',

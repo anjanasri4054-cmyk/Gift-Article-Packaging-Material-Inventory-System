@@ -14,6 +14,7 @@ export default function Dashboard() {
   const [recentOrders, setRecentOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [activityFilter, setActivityFilter] = useState(null)
 
   const fetchAll = useCallback(async () => {
     try {
@@ -104,6 +105,13 @@ export default function Dashboard() {
     const cls = map[status] || 'badge-primary'
     return <span className={`badge ${cls}`}>{status}</span>
   }
+
+  const filteredActivity = recentActivity.filter(activity => {
+    if (!activityFilter) return true
+    const act = (activity.action || activity.action_type || '').toLowerCase()
+    const filter = activityFilter.toLowerCase()
+    return act === filter
+  })
 
   if (loading) {
     return (
@@ -226,7 +234,15 @@ export default function Dashboard() {
           </div>
           <div className="chart-body" style={{ height: 300 }}>
             {chartData?.monthly
-              ? <MonthlyMovementChart data={chartData.monthly} />
+              ? (
+                <MonthlyMovementChart
+                  data={chartData.monthly}
+                  onChartClick={(actionType) => {
+                    setActivityFilter(activityFilter === actionType ? null : actionType)
+                    document.getElementById('recent-activity-section')?.scrollIntoView({ behavior: 'smooth' })
+                  }}
+                />
+              )
               : <div className="empty-state"><p>No data available</p></div>
             }
           </div>
@@ -339,19 +355,52 @@ export default function Dashboard() {
       </div>
 
       {/* Recent Activity */}
-      <div className="card">
-        <div className="card-header">
-          <h3>🕐 Recent Activity</h3>
-          <button className="btn btn-secondary btn-sm" onClick={() => navigate('/history')}>
-            View All →
-          </button>
+      <div id="recent-activity-section" className="card">
+        <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <h3>🕐 Recent Activity</h3>
+            {activityFilter && (
+              <span 
+                className={`badge ${activityFilter === 'Stock In' ? 'badge-success' : 'badge-danger'}`} 
+                style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }} 
+                onClick={() => setActivityFilter(null)}
+                title="Click to clear filter"
+              >
+                Filtered: {activityFilter} ✕
+              </span>
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <button 
+              className={`btn btn-sm ${activityFilter === 'Stock In' ? 'btn-success' : 'btn-secondary'}`} 
+              onClick={() => setActivityFilter(activityFilter === 'Stock In' ? null : 'Stock In')}
+              style={{ backgroundColor: activityFilter === 'Stock In' ? '#10b981' : '', color: activityFilter === 'Stock In' ? '#fff' : '' }}
+            >
+              📥 Stock In
+            </button>
+            <button 
+              className={`btn btn-sm ${activityFilter === 'Stock Out' ? 'btn-danger' : 'btn-secondary'}`} 
+              onClick={() => setActivityFilter(activityFilter === 'Stock Out' ? null : 'Stock Out')}
+              style={{ backgroundColor: activityFilter === 'Stock Out' ? '#f43f5e' : '', color: activityFilter === 'Stock Out' ? '#fff' : '' }}
+            >
+              📤 Stock Out
+            </button>
+            <button className="btn btn-secondary btn-sm" onClick={() => navigate('/history')}>
+              View All →
+            </button>
+          </div>
         </div>
         <div className="table-container">
-          {recentActivity.length === 0 ? (
+          {filteredActivity.length === 0 ? (
             <div className="empty-state">
               <div className="empty-state-icon">📋</div>
-              <h3>No recent activity</h3>
-              <p>Inventory transactions will appear here.</p>
+              <h3>No matching activity</h3>
+              <p>{activityFilter ? `No recent logs found for "${activityFilter}".` : 'Inventory transactions will appear here.'}</p>
+              {activityFilter && (
+                <button className="btn btn-secondary btn-sm" style={{ marginTop: 12 }} onClick={() => setActivityFilter(null)}>
+                  Clear Filter
+                </button>
+              )}
             </div>
           ) : (
             <table className="data-table">
@@ -366,7 +415,7 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {recentActivity.slice(0, 10).map((activity, idx) => (
+                {filteredActivity.slice(0, 10).map((activity, idx) => (
                   <tr key={idx}>
                     <td><strong>{activity.item_name || activity.itemName}</strong></td>
                     <td>{getActionBadge(activity.action || activity.action_type)}</td>
