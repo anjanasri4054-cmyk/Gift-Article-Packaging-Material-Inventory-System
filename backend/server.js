@@ -25,9 +25,6 @@ const settingsRoutes = require('./routes/settings');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Initialize database
-db.initialize();
-
 // Ensure uploads folder exists
 const uploadsDir = path.join(__dirname, 'uploads');
 try {
