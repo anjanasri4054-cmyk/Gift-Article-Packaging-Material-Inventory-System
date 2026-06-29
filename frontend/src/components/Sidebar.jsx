@@ -1,25 +1,26 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
-import axios from 'axios'
+import api from '../api'
+import { LogOut } from 'lucide-react'
 
 const NAV_ITEMS = [
   { path: '/', icon: '📊', label: 'Dashboard' },
   { path: '/products', icon: '🎁', label: 'Gift Articles' },
   { path: '/materials', icon: '📦', label: 'Packaging Materials' },
   { path: '/orders', icon: '🛍️', label: 'Customer Orders' },
-  { path: '/stock-in', icon: '📥', label: 'Stock In' },
-  { path: '/stock-out', icon: '📤', label: 'Stock Out' },
+  { path: '/inventory', icon: '📋', label: 'Inventory' },
   { path: '/suppliers', icon: '🏭', label: 'Suppliers' },
   { path: '/bundle', icon: '🔗', label: 'Bundle Usage' },
-  { path: '/history', icon: '📜', label: 'History' },
   { path: '/reports', icon: '📊', label: 'Reports' },
   { path: '/notifications', icon: '🔔', label: 'Notifications', showBadge: true },
+  { path: '/settings', icon: '⚙️', label: 'Settings' },
 ]
 
 export default function Sidebar() {
   const navigate = useNavigate()
   const location = useLocation()
   const [unreadCount, setUnreadCount] = useState(0)
+  const [outOfStockCount, setOutOfStockCount] = useState(0)
   const adminName = 'Admin'
 
   useEffect(() => {
@@ -30,11 +31,18 @@ export default function Sidebar() {
 
   async function fetchUnreadCount() {
     try {
-      const { data } = await axios.get('/notifications/unread-count')
-      setUnreadCount(data.count || 0)
+      const { data } = await api.get('/notifications/unread-count')
+      setUnreadCount(data.unreadCount || 0)
+      setOutOfStockCount(data.outOfStockCount || 0)
     } catch {
       // silently fail
     }
+  }
+
+  function handleLogout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('adminName');
+    navigate('/login');
   }
 
   function getInitials(name) {
@@ -59,7 +67,7 @@ export default function Sidebar() {
       {/* Navigation */}
       <nav className="sidebar-nav">
         <div className="sidebar-section-label">Main Menu</div>
-        {NAV_ITEMS.slice(0, 7).map((item) => (
+        {NAV_ITEMS.slice(0, 6).map((item) => (
           <Link
             key={item.path}
             to={item.path}
@@ -67,11 +75,16 @@ export default function Sidebar() {
           >
             <span className="nav-item-icon">{item.icon}</span>
             <span className="nav-item-label">{item.label}</span>
+            {item.path === '/materials' && outOfStockCount > 0 && (
+              <span className="nav-badge" style={{ backgroundColor: 'var(--danger)', color: 'white', marginLeft: 'auto' }}>
+                {outOfStockCount} out
+              </span>
+            )}
           </Link>
         ))}
 
         <div className="sidebar-section-label" style={{ marginTop: 16 }}>Reports & Tools</div>
-        {NAV_ITEMS.slice(7).map((item) => (
+        {NAV_ITEMS.slice(6).map((item) => (
           <Link
             key={item.path}
             to={item.path}
@@ -87,14 +100,22 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="sidebar-footer">
-        <div className="sidebar-user">
+      <div className="sidebar-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="sidebar-user" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <div className="sidebar-avatar">{getInitials(adminName)}</div>
           <div className="sidebar-user-info">
-            <h4>{adminName}</h4>
-            <p>Administrator</p>
+            <h4 style={{ margin: 0, fontSize: '0.85rem' }}>{adminName}</h4>
+            <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--text-muted)' }}>Admin</p>
           </div>
         </div>
+        <button
+          onClick={handleLogout}
+          className="btn-icon"
+          title="Sign Out"
+          style={{ color: 'var(--danger)', padding: '6px', cursor: 'pointer' }}
+        >
+          <LogOut size={16} />
+        </button>
       </div>
     </aside>
   )

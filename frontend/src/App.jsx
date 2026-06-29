@@ -1,26 +1,25 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
 
 import Sidebar from './components/Sidebar'
 import Navbar from './components/Navbar'
 import { ToastContainer } from './components/Toast'
-import Login from './pages/Login'
-import Dashboard from './pages/Dashboard'
-import Products from './pages/Products'
-import Materials from './pages/Materials'
-import StockIn from './pages/StockIn'
-import StockOut from './pages/StockOut'
-import Suppliers from './pages/Suppliers'
-import History from './pages/History'
-import Notifications from './pages/Notifications'
-import Bundle from './pages/Bundle'
-import Reports from './pages/Reports'
-import Orders from './pages/Orders'
 
-// ── Axios global setup ──────────────────────────────────────────────────
+import Login from './views/Login'
+import Dashboard from './views/Dashboard'
+import GiftArticles from './views/GiftArticles'
+import PackagingMaterials from './views/PackagingMaterials'
+import CustomerOrders from './views/CustomerOrders'
+import Inventory from './views/Inventory'
+import Suppliers from './views/Suppliers'
+import BundleMapping from './views/BundleMapping'
+import Reports from './views/Reports'
+import Notifications from './views/Notifications'
+import Settings from './views/Settings'
+
+// Axios global fallback setup
 axios.defaults.baseURL = '/api'
-
 axios.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
   if (token) {
@@ -29,30 +28,33 @@ axios.interceptors.request.use((config) => {
   return config
 })
 
-axios.interceptors.response.use(
-  (res) => res,
-  (err) => Promise.reject(err)
-)
-
-// ── Page titles map ──────────────────────────────────────────────────────
+// Page titles map
 const PAGE_TITLES = {
-  '/': 'Dashboard',
-  '/products': 'Gift Articles',
+  '/': 'Dashboard Overview',
+  '/products': 'Gift Articles Catalog',
   '/materials': 'Packaging Materials',
   '/orders': 'Customer Orders',
-  '/stock-in': 'Stock In',
-  '/stock-out': 'Stock Out',
-  '/suppliers': 'Suppliers',
-  '/history': 'Inventory History',
-  '/notifications': 'Notifications',
-  '/bundle': 'Bundle / Material Usage',
-  '/reports': 'Reports & Exports',
+  '/inventory': 'Material Inventory Console',
+  '/suppliers': 'Vendor Suppliers',
+  '/notifications': 'Alerts Notifications',
+  '/bundle': 'Bundle Recipes Mapping',
+  '/reports': 'Visual & CSV Reports',
+  '/settings': 'Settings & Utilities',
 }
 
-// ── App Layout (Sidebar + Navbar + Content) ──────────────────────────────
+// Protected route router guard
+function ProtectedRoute({ children }) {
+  const token = localStorage.getItem('token')
+  if (!token) {
+    return <Navigate to="/login" replace />
+  }
+  return children
+}
+
+// App Layout (Sidebar + Navbar + Page Content)
 function AppLayout() {
   const location = useLocation()
-  const adminName = 'Admin'
+  const adminName = localStorage.getItem('adminName') || 'Admin'
   const pageTitle = PAGE_TITLES[location.pathname] || 'Gift & Packaging'
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light')
 
@@ -78,16 +80,15 @@ function AppLayout() {
         <div className="page-content">
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/materials" element={<Materials />} />
-            <Route path="/orders" element={<Orders />} />
-            <Route path="/stock-in" element={<StockIn />} />
-            <Route path="/stock-out" element={<StockOut />} />
+            <Route path="/products" element={<GiftArticles />} />
+            <Route path="/materials" element={<PackagingMaterials />} />
+            <Route path="/orders" element={<CustomerOrders />} />
+            <Route path="/inventory" element={<Inventory />} />
             <Route path="/suppliers" element={<Suppliers />} />
-            <Route path="/history" element={<History />} />
             <Route path="/notifications" element={<Notifications />} />
-            <Route path="/bundle" element={<Bundle />} />
+            <Route path="/bundle" element={<BundleMapping />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
@@ -97,12 +98,20 @@ function AppLayout() {
   )
 }
 
-// ── Root App ─────────────────────────────────────────────────────────────
+// Root App Entry Point
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/*" element={<AppLayout />} />
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/*"
+          element={
+            <ProtectedRoute>
+              <AppLayout />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   )

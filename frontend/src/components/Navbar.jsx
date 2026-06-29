@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import api from '../api'
 
 export default function Navbar({ title, adminName, theme, toggleTheme }) {
   const navigate = useNavigate()
   const [unreadCount, setUnreadCount] = useState(0)
+  const [outOfStockCount, setOutOfStockCount] = useState(0)
   const [currentTime, setCurrentTime] = useState(new Date())
   const isDark = theme === 'dark'
 
@@ -20,8 +21,9 @@ export default function Navbar({ title, adminName, theme, toggleTheme }) {
 
   async function fetchUnreadCount() {
     try {
-      const { data } = await axios.get('/notifications/unread-count')
-      setUnreadCount(data.count || 0)
+      const { data } = await api.get('/notifications/unread-count')
+      setUnreadCount(data.unreadCount || 0)
+      setOutOfStockCount(data.outOfStockCount || 0)
     } catch {
       // silently fail
     }
@@ -67,6 +69,31 @@ export default function Navbar({ title, adminName, theme, toggleTheme }) {
         >
           {isDark ? '☀️ Light Mode' : '🌙 Dark Mode'}
         </button>
+
+        {outOfStockCount > 0 && (
+          <button
+            className="notification-btn"
+            style={{
+              backgroundColor: 'rgba(244, 63, 94, 0.1)',
+              color: 'var(--danger)',
+              marginRight: '8px',
+              border: '1.5px solid rgba(244, 63, 94, 0.25)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '6px 12px',
+              gap: '4px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: '800',
+              fontSize: '0.85rem'
+            }}
+            onClick={() => navigate('/materials')}
+            title={`${outOfStockCount} items are completely out of stock!`}
+          >
+            ⚠️ {outOfStockCount} out
+          </button>
+        )}
 
         <button
           className="notification-btn"
