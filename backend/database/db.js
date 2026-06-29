@@ -4,29 +4,97 @@ const bcrypt = require('bcryptjs');
 
 const DB_PATH = path.join(__dirname, 'db.json');
 
-let memoryData = null;
+const https = require('https');
 
-// Read database
-function read() {
-  if (memoryData) return memoryData;
+const BUCKET_ID = '1b401f907a724515abc214c32e3f3f6b';
+const KEY_NAME = 'paperplane_inventory_db';
+
+let memoryData = null;
+let isSynced = false;
+
+function cloudGet(bucketId, key) {
+  return new Promise((resolve, reject) => {
+    const url = `https://kvdb.io/${bucketId}/${key}`;
+    https.get(url, (res) => {
+      if (res.statusCode === 404) {
+        resolve(null);
+        return;
+      }
+      let body = '';
+      res.on('data', chunk => body += chunk);
+      res.on('end', () => {
+        try {
+          resolve(JSON.parse(body));
+        } catch (err) {
+          resolve(null);
+        }
+      });
+    }).on('error', err => reject(err));
+  });
+}
+
+function cloudPost(bucketId, key, data) {
+  return new Promise((resolve, reject) => {
+    const url = `https://kvdb.io/${bucketId}/${key}`;
+    const payload = JSON.stringify(data);
+    const req = https.request(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(payload)
+      }
+    }, (res) => {
+      res.on('data', () => {});
+      res.on('end', () => resolve(true));
+    });
+    req.on('error', err => reject(err));
+    req.write(payload);
+    req.end();
+  });
+}
+
+async function syncWithCloud() {
+  if (isSynced) return;
+  try {
+    const cloudData = await cloudGet(BUCKET_ID, KEY_NAME);
+    if (cloudData) {
+      memoryData = cloudData;
+      console.log('☁️ Database successfully synchronized from cloud storage!');
+    } else {
+      // First time: initialize cloud with local seed
+      const localData = readLocal();
+      await cloudPost(BUCKET_ID, KEY_NAME, localData);
+      console.log('☁️ Initialized cloud database with local seed data.');
+    }
+    isSynced = true;
+  } catch (err) {
+    console.error('☁️ Failed to synchronize database from cloud:', err.message);
+  }
+}
+
+function readLocal() {
   try {
     if (fs.existsSync(DB_PATH)) {
       const data = fs.readFileSync(DB_PATH, 'utf8');
-      memoryData = JSON.parse(data);
-      return memoryData;
+      return JSON.parse(data);
     }
   } catch (err) {
-    console.error('Error reading JSON database:', err);
+    console.error('Error reading local JSON database:', err);
   }
-
-  // Fallback: load bundled db.json directly so Vercel includes it in output bundle
   try {
-    memoryData = require('./db.json');
-    return memoryData;
+    return require('./db.json');
   } catch (err) {
-    console.error('Failed to load bundled db.json', err);
     return {};
   }
+}
+
+// Read database
+function read() {
+  if (!memoryData) {
+    memoryData = readLocal();
+    syncWithCloud().catch(err => console.error('Cloud sync failure:', err));
+  }
+  return memoryData;
 }
 
 // Write database
@@ -35,8 +103,11 @@ function write(data) {
   try {
     fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf8');
   } catch (err) {
-    console.error('Error writing JSON database (read-only system):', err.message);
+    // silently skip local write errors on EROFS
   }
+  cloudPost(BUCKET_ID, KEY_NAME, data)
+    .then(() => console.log('☁️ Database changes saved permanently in cloud.'))
+    .catch(err => console.error('☁️ Failed to save database to cloud:', err.message));
 }
 
 // Initialize and Seed Database
