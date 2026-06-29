@@ -6,12 +6,13 @@ export function InventoryDistributionChart({ data }) {
   const labels = data?.labels || [];
   const values = data?.values || data?.data || [];
   const total = values.reduce((sum, val) => sum + val, 0);
+  const centerText = data?.centerText || 'Products';
 
   if (total === 0) {
     return (
       <div className="empty-state" style={{ padding: '30px' }}>
         <div className="empty-state-icon">📊</div>
-        <p>No category data available</p>
+        <p>No data available</p>
       </div>
     );
   }
@@ -22,11 +23,11 @@ export function InventoryDistributionChart({ data }) {
 
   // Premium curated color palette
   const colors = [
-    '#6366f1', // Indigo / Photo Frames
-    '#f59e0b', // Amber / Mugs
-    '#10b981', // Emerald / Cushions
-    '#ec4899', // Pink / Customized Gifts
-    '#06b6d4', // Cyan / Hampers
+    '#6366f1', // Indigo
+    '#f59e0b', // Amber
+    '#10b981', // Emerald
+    '#ec4899', // Pink
+    '#06b6d4', // Cyan
     '#8b5cf6', // Violet
     '#f97316'  // Orange
   ];
@@ -106,7 +107,7 @@ export function InventoryDistributionChart({ data }) {
             {total}
           </span>
           <span style={{ fontSize: '0.625rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)', marginTop: '4px', fontWeight: '600' }}>
-            Products
+            {centerText}
           </span>
         </div>
       </div>

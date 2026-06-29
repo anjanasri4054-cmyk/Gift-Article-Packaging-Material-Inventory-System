@@ -435,10 +435,16 @@ const api = {
         const mat = db.materials.find(m => m.id === sm.materialId);
         return {
           ...sm,
-          itemName: mat ? mat.name : 'Unknown Item',
-          itemType: 'Packaging Material',
+          materialName: mat ? mat.name : 'Unknown Material',
+          itemName: mat ? mat.name : 'Unknown Material',
+          item_name: mat ? mat.name : 'Unknown Material',
+          action: sm.type,
+          type: sm.type,
+          location: mat ? mat.location : '—',
+          unit: mat ? mat.unit : 'Pieces',
           user: 'Admin',
-          notes: sm.purpose
+          notes: sm.purpose,
+          purpose: sm.purpose
         };
       });
       return Promise.resolve({ data: movements });
@@ -471,15 +477,17 @@ const api = {
     }
 
     if (cleanUrl === '/dashboard/chart-data') {
-      const prodTypes = {};
-      db.products.forEach(p => {
-        prodTypes[p.type] = (prodTypes[p.type] || 0) + 1;
+      const customerOrdersCount = {};
+      db.orders.forEach(o => {
+        const customer = db.customers.find(c => c.id === o.customerId);
+        const name = customer ? customer.name : 'Unknown Customer';
+        customerOrdersCount[name] = (customerOrdersCount[name] || 0) + 1;
       });
       return Promise.resolve({
         data: {
           inventoryDistribution: {
-            labels: Object.keys(prodTypes),
-            data: Object.values(prodTypes)
+            labels: Object.keys(customerOrdersCount),
+            values: Object.values(customerOrdersCount)
           },
           monthlyMovements: {
             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
@@ -492,7 +500,18 @@ const api = {
 
     if (cleanUrl === '/dashboard/low-stock') {
       const lowStock = db.materials.filter(m => m.currentStock <= m.minimumStock);
-      return Promise.resolve({ data: lowStock });
+      const mapped = lowStock.map(m => {
+        const sup = db.suppliers.find(s => s.id === m.supplierId);
+        return {
+          id: m.id,
+          name: m.name,
+          type: 'material',
+          quantity: m.currentStock,
+          reorder_level: m.minimumStock,
+          supplier_name: sup ? sup.name : 'Unknown Supplier'
+        };
+      });
+      return Promise.resolve({ data: mapped });
     }
 
     if (cleanUrl === '/dashboard/recent-activity') {
@@ -500,10 +519,13 @@ const api = {
         const mat = db.materials.find(m => m.id === sm.materialId);
         return {
           ...sm,
-          itemName: mat ? mat.name : 'Unknown Item',
-          itemType: 'Packaging Material',
+          item_name: mat ? mat.name : 'Unknown Material',
+          itemName: mat ? mat.name : 'Unknown Material',
+          action: sm.type,
+          type: sm.type,
           user: 'Admin',
-          notes: sm.purpose
+          notes: sm.purpose,
+          purpose: sm.purpose
         };
       });
       return Promise.resolve({
