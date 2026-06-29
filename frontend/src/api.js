@@ -489,8 +489,8 @@ const api = {
           },
           monthlyMovements: {
             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-            stockIn: [100, 150, 200, 120, 300, 450],
-            stockOut: [80, 110, 140, 130, 280, 380]
+            stockIn: [0, 0, 0, 0, 300, 450],
+            stockOut: [0, 0, 0, 0, 280, 380]
           }
         }
       });
