@@ -478,10 +478,16 @@ const api = {
 
     if (cleanUrl === '/dashboard/chart-data') {
       const productQuantities = {};
+      // Initialize all products with 0 count to show them on the graph
+      db.products.forEach(p => {
+        productQuantities[p.name] = 0;
+      });
+      // Add ordered quantities
       db.orderItems.forEach(item => {
         const prod = db.products.find(p => p.id === item.productId);
-        const name = prod ? prod.name : 'Unknown Product';
-        productQuantities[name] = (productQuantities[name] || 0) + Number(item.quantity);
+        if (prod) {
+          productQuantities[prod.name] += Number(item.quantity);
+        }
       });
       return Promise.resolve({
         data: {
