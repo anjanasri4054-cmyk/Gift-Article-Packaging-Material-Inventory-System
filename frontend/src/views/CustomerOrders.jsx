@@ -294,13 +294,23 @@ export default function CustomerOrders() {
       // 2. Calculate totalPrice
       const totalPrice = calculateTotal();
 
-      // 3. Create the order
+      // 3. Map items to include the price
+      const itemsWithPrice = orderForm.items.map(item => {
+        const prod = products.find(p => p.id === parseInt(item.productId));
+        return {
+          productId: Number(item.productId),
+          quantity: Number(item.quantity),
+          price: prod ? parseFloat(prod.price) : 0
+        };
+      });
+
+      // 4. Create the order
       const payload = {
         customerId: finalCustomerId,
         orderDate: new Date().toISOString(),
         deliveryDate: new Date(orderForm.delivery_date).toISOString(),
         totalPrice,
-        items: orderForm.items
+        items: itemsWithPrice
       };
 
       await api.post('/orders', payload);

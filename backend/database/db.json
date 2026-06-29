@@ -267,6 +267,15 @@
       "deliveryDate": "2026-07-01T17:35:41.035Z",
       "totalPrice": 1030,
       "status": "Pending"
+    },
+    {
+      "id": 4,
+      "orderNumber": "ORD-1004",
+      "customerId": 1,
+      "orderDate": "2026-06-29T07:23:03.095Z",
+      "deliveryDate": "2026-07-04T07:23:03.096Z",
+      "totalPrice": 450,
+      "status": "Pending"
     }
   ],
   "orderItems": [
@@ -304,6 +313,13 @@
       "productId": 5,
       "quantity": 1,
       "price": 650
+    },
+    {
+      "id": 6,
+      "orderId": 4,
+      "productId": 1,
+      "quantity": 1,
+      "price": 0
     }
   ],
   "stockMovements": [
