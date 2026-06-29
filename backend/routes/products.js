@@ -8,8 +8,12 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 // Setup multer for image uploads
 const uploadsDir = path.join(__dirname, '../../uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+try {
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+} catch (err) {
+  console.warn('Could not create uploads directory in products route:', err.message);
 }
 
 const storage = multer.diskStorage({
