@@ -477,23 +477,15 @@ const api = {
     }
 
     if (cleanUrl === '/dashboard/chart-data') {
-      const productQuantities = {};
-      // Initialize all products with 0 count to show them on the graph
+      const prodTypes = {};
       db.products.forEach(p => {
-        productQuantities[p.name] = 0;
-      });
-      // Add ordered quantities
-      db.orderItems.forEach(item => {
-        const prod = db.products.find(p => p.id === item.productId);
-        if (prod) {
-          productQuantities[prod.name] += Number(item.quantity);
-        }
+        prodTypes[p.type] = (prodTypes[p.type] || 0) + 1;
       });
       return Promise.resolve({
         data: {
           inventoryDistribution: {
-            labels: Object.keys(productQuantities),
-            values: Object.values(productQuantities)
+            labels: Object.keys(prodTypes),
+            values: Object.values(prodTypes)
           },
           monthlyMovements: {
             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
