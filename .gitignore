@@ -32,3 +32,12 @@ backend/inventory.db-journal
 *.sln
 *.sw?
 .DS_Store
+
+# Scratch & test scripts
+backend/database/test_*.js
+backend/database/check_*.js
+backend/database/automate_*.js
+backend/database/create_*.js
+backend/database/list_*.js
+backend/database/search_*.js
+backend/database/seed_*.js

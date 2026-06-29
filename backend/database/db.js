@@ -6,7 +6,7 @@ const DB_PATH = path.join(__dirname, 'db.json');
 
 const https = require('https');
 
-const BUCKET_ID = '1b401f907a724515abc214c32e3f3f6b';
+const BUCKET_ID = '019f123b-5103-72a0-b1b9-1421d7f88d89';
 const KEY_NAME = 'paperplane_inventory_db';
 
 let memoryData = null;
@@ -16,10 +16,19 @@ const syncPromise = new Promise((resolve) => {
   syncResolver = resolve;
 });
 
-function cloudGet(bucketId, key) {
+function cloudGet(blobId) {
   return new Promise((resolve, reject) => {
-    const url = `https://kvdb.io/${bucketId}/${key}`;
-    https.get(url, (res) => {
+    const options = {
+      hostname: 'jsonblob.com',
+      port: 443,
+      path: `/api/jsonBlob/${blobId}`,
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0'
+      }
+    };
+    https.get(options, (res) => {
       if (res.statusCode === 404) {
         resolve(null);
         return;
@@ -37,17 +46,23 @@ function cloudGet(bucketId, key) {
   });
 }
 
-function cloudPost(bucketId, key, data) {
+function cloudPost(blobId, key, data) {
+  const payloadData = data !== undefined ? data : key;
   return new Promise((resolve, reject) => {
-    const url = `https://kvdb.io/${bucketId}/${key}`;
-    const payload = JSON.stringify(data);
-    const req = https.request(url, {
-      method: 'POST',
+    const payload = JSON.stringify(payloadData);
+    const options = {
+      hostname: 'jsonblob.com',
+      port: 443,
+      path: `/api/jsonBlob/${blobId}`,
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0',
         'Content-Length': Buffer.byteLength(payload)
       }
-    }, (res) => {
+    };
+    const req = https.request(options, (res) => {
       res.on('data', () => {});
       res.on('end', () => resolve(true));
     });
@@ -63,14 +78,14 @@ async function syncWithCloud() {
     return;
   }
   try {
-    const cloudData = await cloudGet(BUCKET_ID, KEY_NAME);
+    const cloudData = await cloudGet(BUCKET_ID);
     if (cloudData) {
       memoryData = cloudData;
       console.log('☁️ Database successfully synchronized from cloud storage!');
     } else {
       // First time: initialize cloud with local seed
       const localData = readLocal();
-      await cloudPost(BUCKET_ID, KEY_NAME, localData);
+      await cloudPost(BUCKET_ID, localData);
       console.log('☁️ Initialized cloud database with local seed data.');
     }
     isSynced = true;
@@ -116,7 +131,7 @@ function write(data) {
   } catch (err) {
     // silently skip local write errors on EROFS
   }
-  cloudPost(BUCKET_ID, KEY_NAME, data)
+  cloudPost(BUCKET_ID, data)
     .then(() => console.log('☁️ Database changes saved permanently in cloud.'))
     .catch(err => console.error('☁️ Failed to save database to cloud:', err.message));
 }

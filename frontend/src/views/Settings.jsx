@@ -33,9 +33,6 @@ export default function SettingsView() {
             defaultGstRate: String(data.defaultGstRate || '18'),
             defaultUnit: data.defaultUnit || 'Pieces'
           });
-          localStorage.setItem('businessName', data.businessName || 'Paper Plane');
-          localStorage.setItem('invoiceSubtitle', data.invoiceSubtitle || 'Gift Article & Packaging Material Inventory System');
-          window.dispatchEvent(new Event('settingsUpdated'));
         }
       } catch (err) {
         toast('Failed to load configurations from database', 'error');
@@ -65,10 +62,6 @@ export default function SettingsView() {
         defaultGstRate: config.defaultGstRate,
         defaultUnit: config.defaultUnit
       });
-
-      localStorage.setItem('businessName', config.businessName);
-      localStorage.setItem('invoiceSubtitle', config.invoiceSubtitle);
-      window.dispatchEvent(new Event('settingsUpdated'));
 
       toast('Operational parameters saved to database successfully!', 'success');
     } catch {

@@ -21,48 +21,13 @@ export default function Sidebar() {
   const location = useLocation()
   const [unreadCount, setUnreadCount] = useState(0)
   const [outOfStockCount, setOutOfStockCount] = useState(0)
-  const adminName = localStorage.getItem('adminName') || 'Admin'
-
-  const [branding, setBranding] = useState({
-    businessName: localStorage.getItem('businessName') || 'Paper Plane',
-    invoiceSubtitle: localStorage.getItem('invoiceSubtitle') || 'Inventory System'
-  });
+  const adminName = 'Admin'
 
   useEffect(() => {
-    fetchUnreadCount();
-    fetchSettings();
-
-    function handleSettingsUpdate() {
-      setBranding({
-        businessName: localStorage.getItem('businessName') || 'Paper Plane',
-        invoiceSubtitle: localStorage.getItem('invoiceSubtitle') || 'Inventory System'
-      });
-    }
-
-    window.addEventListener('settingsUpdated', handleSettingsUpdate);
-    const interval = setInterval(fetchUnreadCount, 30000);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('settingsUpdated', handleSettingsUpdate);
-    };
-  }, []);
-
-  async function fetchSettings() {
-    try {
-      const { data } = await api.get('/settings');
-      if (data) {
-        localStorage.setItem('businessName', data.businessName || 'Paper Plane');
-        localStorage.setItem('invoiceSubtitle', data.invoiceSubtitle || 'Inventory System');
-        setBranding({
-          businessName: data.businessName || 'Paper Plane',
-          invoiceSubtitle: data.invoiceSubtitle || 'Inventory System'
-        });
-      }
-    } catch {
-      // silently ignore
-    }
-  }
+    fetchUnreadCount()
+    const interval = setInterval(fetchUnreadCount, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   async function fetchUnreadCount() {
     try {
@@ -90,11 +55,11 @@ export default function Sidebar() {
       <div className="sidebar-logo">
         <div className="sidebar-logo-icon">🎁</div>
         <div className="sidebar-logo-text">
-          <h1 style={{ fontSize: '0.92rem', lineHeight: '1.2', fontWeight: 800, color: 'var(--accent)' }} className="sidebar-logo-title">
-            {branding.businessName}
+          <h1 style={{ fontSize: '0.72rem', lineHeight: '1.3', fontWeight: 700 }} className="sidebar-logo-title">
+            Gift Article &<br />Packaging Material
           </h1>
-          <p style={{ fontSize: '0.62rem', letterSpacing: '0.5px', marginTop: '2px' }} className="sidebar-logo-subtitle">
-            {branding.invoiceSubtitle || 'Inventory System'}
+          <p style={{ fontSize: '0.62rem', letterSpacing: '0.5px' }} className="sidebar-logo-subtitle">
+            Inventory System
           </p>
         </div>
       </div>
