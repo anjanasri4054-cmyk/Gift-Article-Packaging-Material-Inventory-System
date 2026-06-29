@@ -370,7 +370,7 @@ function initialize() {
     ]
   };
 
-  fs.writeFileSync(DB_PATH, JSON.stringify(initialData, null, 2), 'utf8');
+  write(initialData);
   console.log('✅ JSON Database seeded successfully');
 }
 
