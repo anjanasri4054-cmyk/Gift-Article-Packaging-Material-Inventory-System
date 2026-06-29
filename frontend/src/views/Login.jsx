@@ -10,6 +10,30 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const [branding, setBranding] = useState({
+    businessName: localStorage.getItem('businessName') || 'Paper Plane',
+    invoiceSubtitle: localStorage.getItem('invoiceSubtitle') || 'Inventory Management System'
+  });
+
+  React.useEffect(() => {
+    async function fetchPublicConfig() {
+      try {
+        const { data } = await api.get('/settings/config');
+        if (data && data.businessName) {
+          localStorage.setItem('businessName', data.businessName);
+          localStorage.setItem('invoiceSubtitle', data.invoiceSubtitle);
+          setBranding({
+            businessName: data.businessName,
+            invoiceSubtitle: data.invoiceSubtitle || 'Inventory Management System'
+          });
+        }
+      } catch (err) {
+        // ignore
+      }
+    }
+    fetchPublicConfig();
+  }, []);
+
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
     setForm(f => ({ ...f, [name]: type === 'checkbox' ? checked : value }));
@@ -94,10 +118,10 @@ export default function Login() {
               <Send size={36} style={{ transform: 'rotate(-45deg)', marginLeft: '4px', marginTop: '-4px' }} />
             </div>
             <h1 style={{ color: 'white', fontSize: '1.8rem', fontWeight: '800', letterSpacing: '-0.5px', marginBottom: '6px' }}>
-              Paper Plane
+              {branding.businessName}
             </h1>
             <p style={{ color: '#94a3b8', fontSize: '0.875rem', letterSpacing: '1px', textTransform: 'uppercase' }}>
-              Inventory Management System
+              {branding.invoiceSubtitle}
             </p>
           </div>
 
