@@ -4,26 +4,38 @@ const bcrypt = require('bcryptjs');
 
 const DB_PATH = path.join(__dirname, 'db.json');
 
+let memoryData = null;
+
 // Read database
 function read() {
-  if (!fs.existsSync(DB_PATH)) {
-    initialize();
-  }
+  if (memoryData) return memoryData;
   try {
-    const data = fs.readFileSync(DB_PATH, 'utf8');
-    return JSON.parse(data);
+    if (fs.existsSync(DB_PATH)) {
+      const data = fs.readFileSync(DB_PATH, 'utf8');
+      memoryData = JSON.parse(data);
+      return memoryData;
+    }
   } catch (err) {
     console.error('Error reading JSON database:', err);
+  }
+
+  // Fallback: load bundled db.json directly so Vercel includes it in output bundle
+  try {
+    memoryData = require('./db.json');
+    return memoryData;
+  } catch (err) {
+    console.error('Failed to load bundled db.json', err);
     return {};
   }
 }
 
 // Write database
 function write(data) {
+  memoryData = data;
   try {
     fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf8');
   } catch (err) {
-    console.error('Error writing JSON database:', err);
+    console.error('Error writing JSON database (read-only system):', err.message);
   }
 }
 
