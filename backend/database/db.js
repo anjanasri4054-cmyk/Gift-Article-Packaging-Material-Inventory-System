@@ -11,6 +11,10 @@ const KEY_NAME = 'paperplane_inventory_db';
 
 let memoryData = null;
 let isSynced = false;
+let syncResolver = null;
+const syncPromise = new Promise((resolve) => {
+  syncResolver = resolve;
+});
 
 function cloudGet(bucketId, key) {
   return new Promise((resolve, reject) => {
@@ -54,7 +58,10 @@ function cloudPost(bucketId, key, data) {
 }
 
 async function syncWithCloud() {
-  if (isSynced) return;
+  if (isSynced) {
+    if (syncResolver) syncResolver();
+    return;
+  }
   try {
     const cloudData = await cloudGet(BUCKET_ID, KEY_NAME);
     if (cloudData) {
@@ -69,6 +76,8 @@ async function syncWithCloud() {
     isSynced = true;
   } catch (err) {
     console.error('☁️ Failed to synchronize database from cloud:', err.message);
+  } finally {
+    if (syncResolver) syncResolver();
   }
 }
 
@@ -88,11 +97,13 @@ function readLocal() {
   }
 }
 
+// Start cloud sync immediately on boot
+syncWithCloud().catch(err => console.error('Cloud sync boot error:', err));
+
 // Read database
 function read() {
   if (!memoryData) {
     memoryData = readLocal();
-    syncWithCloud().catch(err => console.error('Cloud sync failure:', err));
   }
   return memoryData;
 }
@@ -450,6 +461,7 @@ const db = {
   read,
   write,
   initialize,
+  syncPromise,
   
   find(table, filterFn) {
     const data = read();

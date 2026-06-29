@@ -52,6 +52,19 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/uploads', express.static(uploadsDir));
 app.use('/api/uploads', express.static(uploadsDir));
 
+// Middleware to ensure database is fully synchronized from cloud before processing requests
+app.use(async (req, res, next) => {
+  if (req.path === '/health' || req.path === '/api/health' || req.path.startsWith('/uploads') || req.path.startsWith('/api/uploads')) {
+    return next();
+  }
+  try {
+    await db.syncPromise;
+  } catch (err) {
+    console.error('Middleware database sync error:', err.message);
+  }
+  next();
+});
+
 // Mount routing endpoints (both with and without /api prefix for maximum client compatibility)
 app.use('/api/auth', authRoutes);
 app.use('/auth', authRoutes);
