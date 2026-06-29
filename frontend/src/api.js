@@ -430,6 +430,24 @@ const api = {
       return Promise.resolve({ data: db.productMaterialMapping });
     }
 
+    if (cleanUrl.startsWith('/mappings/product/')) {
+      const pid = parseInt(cleanUrl.split('/').pop());
+      const mappings = db.productMaterialMapping.filter(m => m.productId === pid);
+      const result = mappings.map(m => {
+        const mat = db.materials.find(material => material.id === m.materialId);
+        return {
+          id: m.id,
+          productId: m.productId,
+          materialId: m.materialId,
+          quantityNeeded: m.quantityNeeded,
+          materialName: mat ? mat.name : 'Unknown Material',
+          unit: mat ? mat.unit : '',
+          currentStock: mat ? mat.currentStock : 0
+        };
+      });
+      return Promise.resolve({ data: result });
+    }
+
     if (cleanUrl === '/inventory/logs') {
       const movements = db.stockMovements.map(sm => {
         const mat = db.materials.find(m => m.id === sm.materialId);
