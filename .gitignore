@@ -41,3 +41,5 @@ backend/database/create_*.js
 backend/database/list_*.js
 backend/database/search_*.js
 backend/database/seed_*.js
+
+.vercel
