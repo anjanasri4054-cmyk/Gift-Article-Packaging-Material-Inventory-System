@@ -477,17 +477,17 @@ const api = {
     }
 
     if (cleanUrl === '/dashboard/chart-data') {
-      const customerOrdersCount = {};
-      db.orders.forEach(o => {
-        const customer = db.customers.find(c => c.id === o.customerId);
-        const name = customer ? customer.name : 'Unknown Customer';
-        customerOrdersCount[name] = (customerOrdersCount[name] || 0) + 1;
+      const productQuantities = {};
+      db.orderItems.forEach(item => {
+        const prod = db.products.find(p => p.id === item.productId);
+        const name = prod ? prod.name : 'Unknown Product';
+        productQuantities[name] = (productQuantities[name] || 0) + Number(item.quantity);
       });
       return Promise.resolve({
         data: {
           inventoryDistribution: {
-            labels: Object.keys(customerOrdersCount),
-            values: Object.values(customerOrdersCount)
+            labels: Object.keys(productQuantities),
+            values: Object.values(productQuantities)
           },
           monthlyMovements: {
             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],

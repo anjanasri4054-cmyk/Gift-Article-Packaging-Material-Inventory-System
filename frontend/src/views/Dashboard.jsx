@@ -221,12 +221,12 @@ export default function Dashboard() {
       <div className="charts-grid">
         <div className="chart-card">
           <div className="chart-header">
-            <h3><BarChart3 size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> Orders by Customer</h3>
-            <span className="badge badge-info">{chartData?.distribution?.labels?.length || 0} customers</span>
+            <h3><BarChart3 size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> Articles Ordered</h3>
+            <span className="badge badge-info">{chartData?.distribution?.labels?.length || 0} articles</span>
           </div>
           <div className="chart-body" style={{ height: 300 }}>
             {chartData?.distribution ? (
-              <InventoryDistributionChart data={{ ...chartData.distribution, centerText: 'Orders' }} />
+              <InventoryDistributionChart data={{ ...chartData.distribution, centerText: 'Articles' }} />
             ) : (
               <div className="empty-state"><p>No data available</p></div>
             )}
